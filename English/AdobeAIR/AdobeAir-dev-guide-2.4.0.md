@@ -4,7 +4,7 @@
 
 * **The Vungle Extension Requires Adobe AIR SDK 4.0 or higher.** For instructions on updating the AIR SDK in Flash Builder or Flash Professional, refer to “How do I update the AIR SDK?” at the end of this guide.
 
-* If working with Android, the Vungle AIR extension requires JDK 7 to be installed on the development system.
+* If working with Android, the Vungle AIR extension requires JDK 7 to be installed on the development system. Android 3.0 (Honeycomb - API version 11) or later required for the application to run.
 
 * You can view the ActionScript 3 Class Documentation [here](http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/index.html).
 
@@ -14,7 +14,7 @@
 
 Start by creating a new AIR for mobile project and adding the native extension.
 
-If targeting *Android*: you may also need to add Google Play Services and/or the Android Support v4 library to your project. Many other extensions include these libraries already so you might not need to add them. To add the extensions, repeat the steps below but use com.vungle.extensions.android.GooglePlayServices.ane and/or com.vungle.extensions.android.AndroidSupportLib.ane in place of com.vungle.extensions.Vungle.ane.
+If targeting *Android*: you may also need to add Google Play Services library to your project. Many other extensions already include this library so you might not need to add it. To add the extension, repeat the steps below but use com.vungle.extensions.android.GooglePlayServices.ane in place of com.vungle.extensions.Vungle.ane.
 
 ### In Flash Professional CS6 or Higher:
 
@@ -55,19 +55,18 @@ For Vungle to work, changes are required to the application XML file for your ap
   </extensions>
   ```
 
-3. If targeting *Android*: you may need to include the Google Play Services and/or the Android Support Lib extensions. Add their extension IDs here as well.
+3. If targeting *Android*: you may need to include the Google Play Services extension. Add its extension ID here as well.
 
   ```as3
   <extensions>
   <extensionID>com.vungle.extensions.Vungle</extensionID>
   <extensionID>com.vungle.extensions.android.GooglePlayServices</extensionID>
-  <extensionID>com.vungle.extensions.android.AndroidSupportLib</extensionID>
   </extensions>
   ```
 
 ### For AIR Applications Targeting Android
 
-*If targeting Android*, update your Android Manifest Additions in the android XML element, to include the INTERNET, WRITE_EXTERNAL_STORAGE, and ACCESS_NETWORK_STATE permissions; add the FullScreenAdActivity activity definition; add the VungleService service; and add the google-play-services version meta-data tag:  
+*If targeting Android*, update your Android Manifest Additions in the android XML element, to include the INTERNET, WRITE_EXTERNAL_STORAGE, and ACCESS_NETWORK_STATE permissions; add the VideoFullScreenAdActivity and MraidFullScreenAdActivity activity definitions; and add the google-play-services version meta-data tag:  
 
 ```as3
 <android> 
@@ -81,15 +80,12 @@ For Vungle to work, changes are required to the application XML file for your ap
   <application>
     <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version"/>
 
-    <activity
-      android:name="com.vungle.publisher.FullScreenAdActivity"
+    <activity android:name="com.vungle.publisher.VideoFullScreenAdActivity"
       android:configChanges="keyboardHidden|orientation|screenSize"
-      android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
-    />
-    
-    <service android:name="com.vungle.publisher.VungleService"
-      android:exported="false"
-    />
+      android:theme="@android:style/Theme.NoTitleBar.Fullscreen"/>
+    <activity android:name="com.vungle.publisher.MraidFullScreenAdActivity"
+      android:configChanges="keyboardHidden|orientation|screenSize"
+      android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen"/>
   </application> 
 </manifest> 
 ]]></manifestAdditions>
@@ -102,7 +98,7 @@ The Vungle API can be added your application in just a few lines of ActionScript
 
 ###  Initialize the Vungle Extension
 
-Initialize the API when your application starts. (If using pure ActionScript, do this in the constructor of your Document Class. If using Flex, call this in initialize() event of the main class. If using timeline code in Flash, do this on Frame 1.)
+Initialize the API when your application starts. (If using pure ActionScript, do this in the constructor of your Document Class. If using Flex, call this in initialize() event of the main class. If using timeline code in Flash, do this on Frame 1).
 
 1. Import the API Classes:
 
@@ -111,9 +107,9 @@ Initialize the API when your application starts. (If using pure ActionScript, do
   import com.vungle.extensions.events.*;
   ```
 
-2. Initialize the API by calling Vungle.create(), and passing in an array containing your application ID from the Vungle Dashboard. If you are targeting both iOS and Android from the same project, include both IDs in the array- with the iOS id first and the Android id second.
+2. Initialize the API by calling `Vungle.create()`, and passing in an array containing your application ID from the Vungle Dashboard. If you are targeting both iOS and Android from the same project, include both IDs in the array - with the iOS id first and the Android id second.
   
-  You should wrap your call to Vungle.create() in a try/catch since Vungle may throw an error during the creation process (for instance, the extension throws an error if running on the Desktop):
+  You should wrap your call to `Vungle.create()` in a try/catch since Vungle may throw an error during the creation process (for instance, the extension throws an error if running on the Desktop):
 
   ```as3
   try
@@ -130,7 +126,7 @@ Initialize the API when your application starts. (If using pure ActionScript, do
 
 ### Display an Interstitial Ad
 
-To display an interstitial ad, call playAd(). You'll want to first check than ad is available using the isAdAvailable() method:
+To display an interstitial ad, call `playAd()`. You'll want to first check than ad is available using the `isAdAvailable()` method:
 
 ```as3
 if (Vungle.vungle.isAdAvailable())
@@ -141,7 +137,7 @@ if (Vungle.vungle.isAdAvailable())
 
 ### Display an Incentivized Ad
 
-To display an incentivized ad, call playAd() with a configuration object and set `incentivized` option to `true`. You'll want to first check than ad is available using the isAdAvailable() method.
+To display an incentivized ad, call `playAd()` with a configuration object and set `incentivized` option to `true`. You'll want to first check than ad is available using the `isAdAvailable()` method.
 
 ```as3
 if (Vungle.vungle.isAdAvailable())
@@ -152,13 +148,13 @@ if (Vungle.vungle.isAdAvailable())
 }
 ```
 
-To reward the player for completing an incentivized view, you'll want to implement the AD_VIEWED event listener as described below.
+To reward the player for completing an incentivized view, you'll want to implement the `AD_FINISHED` event listener as described below.
 
 ### Add Event Listeners
 
-The Vungle Extension dispatches five events: VungleEvent.AD_PLAYABLE, VungleEvent.AD_STARTED, VungleEvent.AD_FINISHED, VungleEvent.AD_VIEWED and VungleEvent.AD_LOG.
+The Vungle Extension dispatches four events: `VungleEvent.AD_PLAYABLE`, `VungleEvent.AD_STARTED`, `VungleEvent.AD_FINISHED`, and `VungleEvent.AD_LOG`.
 
-1. The AD_PLAYABLE is dispatched when an ad is ready to play (on Android) or is cached (on iOS):
+1. The `AD_PLAYABLE` is dispatched when an ad is ready to play:
 
 ```as3
 Vungle.vungle.addEventListener(VungleEvent.AD_PLAYABLE, onAdPlayable);
@@ -169,7 +165,7 @@ function onAdPlayable(e:VungleEvent):void
 }
 ```
 
-2. The AD_STARTED and AD_FINISHED events are dispatched when an ad is displayed and dismissed, respectively:
+2. The `AD_STARTED` and `AD_FINISHED` events are dispatched when an ad is displayed and dismissed, respectively:
 
   ```as3
   Vungle.vungle.addEventListener(VungleEvent.AD_STARTED, onAdStarted); 
@@ -182,31 +178,15 @@ function onAdPlayable(e:VungleEvent):void
 
   function onAdFinished(e:VungleEvent):void
   { 
-    trace("ad dismissed: " + e.wasCallToActionClicked);
+    trace("ad dismissed, CTA = " + e.wasCallToActionClicked);
+    if (e.wasSuccessfulView)
+    {
+      trace("counts a completed view - present reward.");
+    }
   }
   ```
 
-3. The AD_VIEWED event is triggered when the user is no longer in a Vungle ad, and has watched some portion of the video. The 'watched' property is the amount of time, in seconds, of a video that the user watched. The 'length' property is the total length of the video. 
-
-  (This event may not be called in some cases, such as when there is a pre-roll HTML asset in the advertisement and the user opts out of the ad before seeing the video.) 
-
-  For incentivized ads, Vungle considers a viewing where more than 80% of the video was seen as a completed view:
-
-  ```as3
-  Vungle.vungle.addEventListener(VungleEvent.AD_VIEWED, onAdViewed); 
-
-  function onAdStarted(e:VungleEvent):void 
-  { 
-    trace("watched"+e.watched+" of "+e.length+" second video."); 
-    var percentComplete:Number=e.watched/e.length; 
-    if(percentComplete>0.80) 
-    { 
-      trace("counts a completed view- present reward."); 
-    } 
-  }
-  ```
-
-4. The AD_LOG is dispatched when a log message is sent by the Vungle SDK. You can use it for debugging. Logging is implemented only in Vungle SDK for iOS, so this event is platform-specific.
+3. The `AD_LOG` is dispatched when a log message is sent by the Vungle SDK. You can use it for debugging. Logging is implemented only in Vungle SDK for iOS, so this event is platform-specific.
 
 ```as3
 Vungle.vungle.setLoggingEnabled(true);
